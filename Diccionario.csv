@@ -1,0 +1,16 @@
+﻿,Tabla,Campo,Descripción
+,db_transac,card_id,Número único de tarjeta
+,db_transac,product_name,Nombre del producto (Tarjeta)
+,db_transac,product_type,"Tipo de producto (Crédito, Débito o Prepago)"
+,db_transac,amt,Monto de la transacción en USD
+,db_transac,is_xb,Indicador (flag) que es 1 cuando la transacción es internacional
+,db_transac,is_contactless,Indicador (flag) que es 1 cuando la transacción fue usando tecnología contactless
+,db_transac,prch_date,Fecha de la transacción
+,db_transac,prch_time,Hora de la transacción
+,db_transac,ctry_card,País de emisión de la tarjeta
+,db_transac,ctry_mrch,País donde se realizó la compra (país del comercio)
+,db_transac,mrch,Nombre del comercio
+,db_transac,mcg_id,Identificador de MCG (Merchant Category Group o Código de Categoría del Comercio)
+,mcg_list,mcg,Identificador de MCG (Merchant Category Group o Código de Categoría del Comercio)
+,mcg_list,mcg_name,Nombre de la categoría del comercio
+,,,
