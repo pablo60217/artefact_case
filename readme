@@ -1,31 +1,70 @@
-2. Justificación de Negocio: Una explicación clara de las principales instrucciones que usaste (especialmente para el reto del cashback) y qué impacto tienen en los resultados.
+# Masterplop · Desafío Analytic Engineer
 
-  Para resolver el caso se utilizo metodología tipica de Ciencia de Datos donde
-  1) Entendimiento de los datos y problema
-  2) Procesamiento / limpieza: Por medio de Python, archivo ipynb para la ejecución donde se 1) estandarizo nombre de paises ya que algunos tenian tilde. 2) normalizo las fechas en formato para SQL. 3) Estandarizar tipos de tarjeta a 2 tipos (credito y debito)
-  3) Analizar los datos, carpinteria: por medio de Dbeaver se entendieron los datos ya procesados, y se realizo un primer approach con Streamlit de borrador de graficos para el negocio. Se crean subtablas
-  4) Migración a BigQuery: Looker Studio es mucho mas poderoso para visualizar graficos, pero requeria BigQuery para manejar bases de datos grandes (>100 mb). 
-  5) Realización Dashboard: Se construye el grafico en Looker Studio
-  
-    
-Campaña Cashback: Cashback del 7% a clientes chilenos en transacciones que hacen fuera de chile por el mes de mayo 2024.
-Reto de Cashback, preguntas a resolver:
-    1) Cuanto costo a la empresa
-    2) Cuantas tarjetas impacto
+## Pipeline de Solución
 
-    Proceso Resolución
-    1) Luego de entender el problema, una vez los datos de transacciones estan procesados y disponibles toca hacer una preparación para resolver la pregunta, como:
-        - Filtros relevantes: Tarjetas chilenas, compras en pais distinto a chile, compras de valor positivo, otras
-    2) Creación de tabla: se crea una tabla con los filtros donde la dimensión es las tarjetas que aplica, y se suma el gasto aplciable
-    3) Variable generada: maximo se paga $50 por tarjeta en cashback, por ende sí la compra es mayor a 50/0.07, solo da 50 de cashback, sino el valor gastado aplicable * 7%.
-    4) Guardar en BigQuery
-    5) Visualizar
+| Paso | Herramienta | Qué se hizo |
+|---|---|---|
+| 1. Limpieza | Python (`data_processing.ipynb`) | Normalización de tildes en nombres de países, fechas a formato SQL, unificación de tipos de tarjeta a `Credito` / `Debito` |
+| 2. Exploración | DBeaver + DuckDB | Consultas SQL sobre el archivo procesado sin instalar motor de BD |
+| 3. Prototipo visual | Streamlit (`dashboard_artefact.py`) | Borrador de gráficos para validar métricas antes del dashboard final |
+| 4. Migración | BigQuery | Carga de tablas procesadas para soportar Looker Studio con volúmenes >100 MB |
+| 5. Dashboard | Looker Studio | Tablero final con identidad visual Masterplop |
 
-    Respuesta: 
-      1) Cuanto costo a la empresa: Gasto $197,496
-      2) Cuantas tarjetas impacto: Tarjetas impactadas 4,720
+---
 
-    Impacto: 90% del valor de las compras de tarjetas chilenas en el periodo, +23% de crecimiento ($1 M) en gasto de tarjetas de chile vs mes anterior.
+## Estructura del repositorio
 
-3. Dashboard Masterplop: Un tablero visual (en Power BI, Looker Studio o la herramienta que prefieras) para discutir los resultados con la gerencia. ¡No olvides usar los colores de la marca!
-LINK Dashboard: https://datastudio.google.com/reporting/03bca486-c520-40bb-8261-79b250860cfd
+```
+├── data_processing.ipynb       # Limpieza y transformación de datos
+├── prueba_artefact.sql         # Consultas de todos los indicadores + cashback
+├── dashboard_artefact.py       # Prototipo Streamlit
+├── mcg_list.csv                # Maestro Merchant Category Group
+├── Diccionario.csv             # Descripción de campos
+└── README.md
+```
+
+> Los archivos `db_transac.csv` y `transactions_cleaned.csv` no se incluyen por peso.
+
+---
+
+## Indicadores Clave — Justificación de Negocio
+
+**Volumen:** Se contaron tarjetas únicas (no transacciones) por tipo y trimestre, ya que una misma tarjeta puede generar múltiples compras y el dato relevante para la gerencia es cuántos clientes estuvieron activos.
+
+**Ticket Trimestral:** El gasto promedio se calculó dividiendo el gasto total entre las tarjetas únicas activas en el trimestre — no entre el número de operaciones — para reflejar el valor real que aporta cada cliente al negocio.
+
+**Ticket Regional:** Se agrupó por país del comercio (`ctry_mrch`) para entender dónde se gasta el dinero, no dónde vive el cliente. Esto permite identificar mercados con mayor valor de transacción promedio.
+
+**Top Comercios:** El ranking de MCG se expresó en porcentaje del gasto total (no en monto absoluto) para que sea comparable entre períodos y no dependa del volumen general del negocio.
+
+**Adopción Tecnológica:** El campo `is_contactless` tiene valores 0/1, por lo que el promedio equivale directamente al porcentaje de transacciones contactless — una proxy directa de modernización del uso de la tarjeta por país.
+
+---
+
+## Campaña Cashback — Mayo 2024
+
+**Regla de negocio:** 7 % de cashback sobre compras realizadas fuera de Chile por tarjetas de crédito chilenas durante mayo 2024, con tope de **USD 50 por tarjeta**.
+
+### Decisiones de diseño
+
+- Solo se consideraron transacciones con monto positivo para excluir reversas y devoluciones que inflarían artificialmente el gasto base.
+- Se identificaron compras internacionales comparando el país de la tarjeta con el país del comercio (`ctry_mrch`), usando los campos nativos del dataset.
+- El tope de USD 50 se aplicó **por tarjeta sobre el gasto acumulado del mes**, no transacción a transacción. Esto replica la mecánica real de una campaña de cashback mensual.
+- El umbral de corte es aproximadamente USD 714 de gasto exterior: tarjetas que superaron ese monto reciben exactamente USD 50; las demás reciben el 7 % de su gasto.
+
+### Resultados
+
+| Métrica | Valor |
+|---|---|
+| Costo total del cashback | **USD 197,496** |
+| Tarjetas impactadas | **4,720** |
+
+### Impacto de negocio
+
+El cashback representó el 90 % del gasto exterior de tarjetas chilenas en el período. Mayo 2024 registró un crecimiento del **+23 % (~USD 1 M)** en gasto de tarjetas chilenas respecto a abril, lo que sugiere que la campaña tuvo un efecto real de activación y no solo de recompensa pasiva.
+
+---
+
+## Dashboard
+
+🔗 [Ver Dashboard en Looker Studio](https://datastudio.google.com/reporting/03bca486-c520-40bb-8261-79b250860cfd)
