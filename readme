@@ -1,1 +1,31 @@
+2. Justificación de Negocio: Una explicación clara de las principales instrucciones que usaste (especialmente para el reto del cashback) y qué impacto tienen en los resultados.
 
+  Para resolver el caso se utilizo metodología tipica de Ciencia de Datos donde
+  1) Entendimiento de los datos y problema
+  2) Procesamiento / limpieza: Por medio de Python, archivo ipynb para la ejecución donde se 1) estandarizo nombre de paises ya que algunos tenian tilde. 2) normalizo las fechas en formato para SQL. 3) Estandarizar tipos de tarjeta a 2 tipos (credito y debito)
+  3) Analizar los datos, carpinteria: por medio de Dbeaver se entendieron los datos ya procesados, y se realizo un primer approach con Streamlit de borrador de graficos para el negocio. Se crean subtablas
+  4) Migración a BigQuery: Looker Studio es mucho mas poderoso para visualizar graficos, pero requeria BigQuery para manejar bases de datos grandes (>100 mb). 
+  5) Realización Dashboard: Se construye el grafico en Looker Studio
+  
+    
+Campaña Cashback: Cashback del 7% a clientes chilenos en transacciones que hacen fuera de chile por el mes de mayo 2024.
+Reto de Cashback, preguntas a resolver:
+    1) Cuanto costo a la empresa
+    2) Cuantas tarjetas impacto
+
+    Proceso Resolución
+    1) Luego de entender el problema, una vez los datos de transacciones estan procesados y disponibles toca hacer una preparación para resolver la pregunta, como:
+        - Filtros relevantes: Tarjetas chilenas, compras en pais distinto a chile, compras de valor positivo, otras
+    2) Creación de tabla: se crea una tabla con los filtros donde la dimensión es las tarjetas que aplica, y se suma el gasto aplciable
+    3) Variable generada: maximo se paga $50 por tarjeta en cashback, por ende sí la compra es mayor a 50/0.07, solo da 50 de cashback, sino el valor gastado aplicable * 7%.
+    4) Guardar en BigQuery
+    5) Visualizar
+
+    Respuesta: 
+      1) Cuanto costo a la empresa: Gasto $197,496
+      2) Cuantas tarjetas impacto: Tarjetas impactadas 4,720
+
+    Impacto: 90% del valor de las compras de tarjetas chilenas en el periodo, +23% de crecimiento ($1 M) en gasto de tarjetas de chile vs mes anterior.
+
+3. Dashboard Masterplop: Un tablero visual (en Power BI, Looker Studio o la herramienta que prefieras) para discutir los resultados con la gerencia. ¡No olvides usar los colores de la marca!
+LINK Dashboard: https://datastudio.google.com/reporting/03bca486-c520-40bb-8261-79b250860cfd
